@@ -30,14 +30,6 @@ const Loading = ({ text = "Loading..." }) => (
   </div>
 );
 
-// Protected Route wrapper
-const ProtectedRoute = ({ children, isAuthenticated }) => {
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-};
-
 // Layout wrapper component
 const LayoutWrapper = ({ children, onLogout }) => {
   const location = useLocation();
@@ -58,148 +50,181 @@ const LayoutWrapper = ({ children, onLogout }) => {
   );
 };
 
-// Main App Content with Routes
+// Authenticated App Content - Only rendered when user is authenticated
+const AuthenticatedApp = ({ onLogout }) => {
+  return (
+    <PurchaseOrderProvider>
+      <POLineItemsProvider>
+        <Suspense fallback={<Loading text="Loading application..." />}>
+          <Routes>
+            {/* Protected Routes with Layout */}
+            <Route
+              path="/"
+              element={
+                <LayoutWrapper onLogout={onLogout}>
+                  <Home />
+                </LayoutWrapper>
+              }
+            />
+
+            <Route
+              path="/header-items"
+              element={
+                <LayoutWrapper onLogout={onLogout}>
+                  <HeaderItems />
+                </LayoutWrapper>
+              }
+            />
+
+            <Route
+              path="/po-line-items"
+              element={
+                <LayoutWrapper onLogout={onLogout}>
+                  <POLineItems />
+                </LayoutWrapper>
+              }
+            />
+
+            <Route
+              path="/source-data"
+              element={
+                <LayoutWrapper onLogout={onLogout}>
+                  <SourceData />
+                </LayoutWrapper>
+              }
+            />
+
+            <Route
+              path="/settings"
+              element={
+                <LayoutWrapper onLogout={onLogout}>
+                  <Settings />
+                </LayoutWrapper>
+              }
+            />
+
+            {/* Catch all route - redirect to home for authenticated users */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </POLineItemsProvider>
+    </PurchaseOrderProvider>
+  );
+};
+
+// Unauthenticated App Content - Only login routes
+const UnauthenticatedApp = ({ onLoginSuccess }) => {
+  return (
+    <Suspense fallback={<Loading text="Loading login..." />}>
+      <Routes>
+        <Route
+          path="/login"
+          element={<Index onLoginSuccess={onLoginSuccess} />}
+        />
+        {/* Redirect all other routes to login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Suspense>
+  );
+};
+
+// Main App Content with Authentication Logic
 const AppContent = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Authentication check effect
   useEffect(() => {
-    // Check if user is already authenticated
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      setIsAuthenticated(true);
-      // If user is on login page but authenticated, redirect to home
-      if (location.pathname === "/login") {
-        navigate("/", { replace: true });
-      }
-    } else {
-      // If user is not authenticated and not on login page, redirect to login
-      if (location.pathname !== "/login") {
+    const checkAuthentication = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+
+        if (token) {
+          // Optional: Validate token with server
+          // const isValidToken = await validateToken(token);
+          // if (isValidToken) {
+          setIsAuthenticated(true);
+
+          // If user is on login page but authenticated, redirect to home
+          if (location.pathname === "/login") {
+            navigate("/", { replace: true });
+          }
+          // } else {
+          //   // Token is invalid, remove it
+          //   localStorage.removeItem("authToken");
+          //   localStorage.removeItem("userInfo");
+          //   setIsAuthenticated(false);
+          //   navigate("/login", { replace: true });
+          // }
+        } else {
+          setIsAuthenticated(false);
+          // If user is not authenticated and not on login page, redirect to login
+          if (location.pathname !== "/login") {
+            navigate("/login", { replace: true });
+          }
+        }
+      } catch (error) {
+        console.error("Authentication check failed:", error);
+        setIsAuthenticated(false);
         navigate("/login", { replace: true });
+      } finally {
+        setIsLoading(false);
+        setAuthChecked(true);
       }
-    }
-    setIsLoading(false);
+    };
+
+    checkAuthentication();
   }, [location.pathname, navigate]);
 
-  const handleLoginSuccess = () => {
+  // Handle successful login
+  const handleLoginSuccess = (token, userInfo) => {
+    // Store authentication data
+    localStorage.setItem("authToken", token);
+    if (userInfo) {
+      localStorage.setItem("userInfo", JSON.stringify(userInfo));
+    }
+
     setIsAuthenticated(true);
     navigate("/", { replace: true });
   };
 
+  // Handle logout
   const handleLogout = () => {
     // Clear authentication data
     localStorage.removeItem("authToken");
     localStorage.removeItem("userInfo");
+
     setIsAuthenticated(false);
     navigate("/login", { replace: true });
   };
 
   // Show loading spinner during initial authentication check
-  if (isLoading) {
+  if (isLoading || !authChecked) {
     return <Loading text="Checking authentication..." />;
   }
 
+  // Render appropriate app based on authentication status
   return (
     <>
-      <Suspense fallback={<Loading text="Loading..." />}>
-        <Routes>
-          {/* Login Route */}
-          <Route
-            path="/login"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/" replace />
-              ) : (
-                <Index onLoginSuccess={handleLoginSuccess} />
-              )
-            }
-          />
-
-          {/* Protected Routes with Layout */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
-                <LayoutWrapper onLogout={handleLogout}>
-                  <Home />
-                </LayoutWrapper>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/header-items"
-            element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
-                <LayoutWrapper onLogout={handleLogout}>
-                  <HeaderItems />
-                </LayoutWrapper>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/po-line-items"
-            element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
-                <LayoutWrapper onLogout={handleLogout}>
-                  <POLineItems />
-                </LayoutWrapper>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/source-data"
-            element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
-                <LayoutWrapper onLogout={handleLogout}>
-                  <SourceData />
-                </LayoutWrapper>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
-                <LayoutWrapper onLogout={handleLogout}>
-                  <Settings />
-                </LayoutWrapper>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Catch all route - redirect to home if authenticated, login if not */}
-          <Route
-            path="*"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/" replace />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-        </Routes>
-      </Suspense>
+      {isAuthenticated ? (
+        <AuthenticatedApp onLogout={handleLogout} />
+      ) : (
+        <UnauthenticatedApp onLoginSuccess={handleLoginSuccess} />
+      )}
       <Toaster />
     </>
   );
 };
 
+// Main App Component
 const App = () => {
   return (
-    <PurchaseOrderProvider>
-      <POLineItemsProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </POLineItemsProvider>
-    </PurchaseOrderProvider>
+    <Router>
+      <AppContent />
+    </Router>
   );
 };
 

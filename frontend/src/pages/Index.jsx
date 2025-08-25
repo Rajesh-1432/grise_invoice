@@ -18,7 +18,6 @@ const Index = ({ onLoginSuccess }) => {
       ...prev,
       [name]: value,
     }));
-    // Clear error when user starts typing
     if (error) setError("");
   };
 
@@ -30,15 +29,10 @@ const Index = ({ onLoginSuccess }) => {
     try {
       const response = await api.post("api/auth/user-login", formData);
 
-      // Fixed: Check response status correctly
       if (response.status === 200 && response.data.token) {
-        // Store token in localStorage
-        localStorage.setItem("authToken", response.data.token);
-        // Store user info if available
-        if (response.data.user) {
-          localStorage.setItem("userInfo", JSON.stringify(response.data.user));
-        }
-        onLoginSuccess();
+        const token = response.data.token;
+        const userInfo = response.data.user || null;
+        onLoginSuccess(token, userInfo);
       } else {
         setError(
           response.data.message ||
@@ -46,19 +40,13 @@ const Index = ({ onLoginSuccess }) => {
         );
       }
     } catch (err) {
-      console.error("Login error:", err);
-
-      // Better error handling
       if (err.response) {
-        // Server responded with error status
         const errorMessage =
           err.response.data?.message || `Server error: ${err.response.status}`;
         setError(errorMessage);
       } else if (err.request) {
-        // Request was made but no response received
         setError("Network error. Please check your connection and try again.");
       } else {
-        // Something else happened
         setError("An unexpected error occurred. Please try again.");
       }
     } finally {
@@ -69,7 +57,6 @@ const Index = ({ onLoginSuccess }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo and App Name */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-32 h-20 flex justify-center items-center">
             <img
@@ -81,7 +68,6 @@ const Index = ({ onLoginSuccess }) => {
           <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>
 
-        {/* Login Form */}
         <div className="bg-white rounded-xl shadow-xl border border-gray-100 p-8">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -94,7 +80,6 @@ const Index = ({ onLoginSuccess }) => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
             <div>
               <label
                 htmlFor="email"
@@ -120,7 +105,6 @@ const Index = ({ onLoginSuccess }) => {
               </div>
             </div>
 
-            {/* Password Field */}
             <div>
               <label
                 htmlFor="password"
@@ -158,7 +142,6 @@ const Index = ({ onLoginSuccess }) => {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading || !formData.email || !formData.password}
@@ -175,7 +158,6 @@ const Index = ({ onLoginSuccess }) => {
             </button>
           </form>
 
-          {/* Footer */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
               Secure login powered by Touchless AP
