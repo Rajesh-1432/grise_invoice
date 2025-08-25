@@ -9,47 +9,42 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Simple CORS setup - allows your domain
+// Best practice CORS configuration for production
+const allowedOrigins = [
+  "https://invoice.rspos.dev",
+  "https://invoicebackend.rspos.dev",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  // Add any other domains you need
+];
+
 app.use(
   cors({
-    origin: "https://invoice.rspos.dev",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Requested-With",
       "Origin",
+      "X-Requested-With",
+      "Content-Type",
       "Accept",
+      "Authorization",
+      "Cache-Control",
     ],
-    optionsSuccessStatus: 200,
+    optionsSuccessStatus: 200, // For legacy browser support
   })
 );
 
-// Handle preflight requests for all routes
-app.options("*", cors()); // Enable preflight for all routes
-
 app.use(express.json());
-
-// Add explicit OPTIONS handler before routes
-app.use("/api/*", (req, res, next) => {
-  if (req.method === "OPTIONS") {
-    res.header("Access-Control-Allow-Origin", "https://invoice.rspos.dev");
-    res.header(
-      "Access-Control-Allow-Methods",
-      "GET,PUT,POST,DELETE,PATCH,OPTIONS"
-    );
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, Content-Length, X-Requested-With"
-    );
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
-
 app.use("/api/auth", authRoutes);
 
 const dbConnect = async () => {

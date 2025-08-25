@@ -38,8 +38,8 @@ const ProtectedRoute = ({ children, isAuthenticated }) => {
   return children;
 };
 
-// Layout wrapper component to handle routing context
-const LayoutWrapper = ({ children, onLogout, isAuthenticated }) => {
+// Layout wrapper component
+const LayoutWrapper = ({ children, onLogout }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -117,27 +117,71 @@ const AppContent = () => {
             }
           />
 
-          {/* Protected Routes */}
+          {/* Protected Routes with Layout */}
           <Route
-            path="/*"
+            path="/"
             element={
               <ProtectedRoute isAuthenticated={isAuthenticated}>
-                <LayoutWrapper
-                  onLogout={handleLogout}
-                  isAuthenticated={isAuthenticated}
-                >
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/header-items" element={<HeaderItems />} />
-                    <Route path="/po-line-items" element={<POLineItems />} />
-                    <Route path="/source-data" element={<SourceData />} />
-                    <Route path="/settings" element={<Settings />} />
-
-                    {/* Fallback route */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
+                <LayoutWrapper onLogout={handleLogout}>
+                  <Home />
                 </LayoutWrapper>
               </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/header-items"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <LayoutWrapper onLogout={handleLogout}>
+                  <HeaderItems />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/po-line-items"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <LayoutWrapper onLogout={handleLogout}>
+                  <POLineItems />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/source-data"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <LayoutWrapper onLogout={handleLogout}>
+                  <SourceData />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated}>
+                <LayoutWrapper onLogout={handleLogout}>
+                  <Settings />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Catch all route - redirect to home if authenticated, login if not */}
+          <Route
+            path="*"
+            element={
+              isAuthenticated ? (
+                <Navigate to="/" replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
             }
           />
         </Routes>
