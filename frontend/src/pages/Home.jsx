@@ -339,9 +339,21 @@ const Home = () => {
                     }}
                   />
                   <Legend />
-                  <Bar dataKey="success" fill="#10b981" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="errors" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="pending" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="Cleared Line Items"
+                    fill="#10b981"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="Errored Line Items"
+                    fill="#ef4444"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="Auto Posted Lines"
+                    fill="#f59e0b"
+                    radius={[4, 4, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -360,18 +372,6 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-center mb-2">
-                <Clock className="h-5 w-5 text-gray-500 mr-2" />
-                <span className="text-sm font-medium text-gray-500">
-                  PROCESSED
-                </span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {isLoading ? "..." : metrics.processed.toLocaleString()}
-              </div>
-            </div> */}
-
             <div className="text-center p-4 bg-yellow-50 rounded-lg">
               <div className="flex items-center justify-center mb-2">
                 <Clock className="h-5 w-5 text-yellow-500 mr-2" />
@@ -394,7 +394,7 @@ const Home = () => {
               <div className="text-2xl font-bold text-gray-900">
                 {isLoading
                   ? "..."
-                  : metrics.metrics.processed > 0
+                  : metrics.processed > 0
                   ? `${Math.round(
                       (metrics.success / metrics.processed) * 100
                     )}%`
@@ -406,17 +406,27 @@ const Home = () => {
               <div className="flex items-center justify-center mb-2">
                 <XCircle className="h-5 w-5 text-red-500 mr-2" />
                 <span className="text-sm font-medium text-red-600">
-                  Errored Line Item
+                  Errored Line Items
                 </span>
               </div>
               <div className="text-2xl font-bold text-gray-900">
                 {isLoading
                   ? "..."
                   : metrics.processed > 0
-                  ? `${Math.round(
-                      (metrics.errors / metrics.processed) * 100
-                    )}%`
+                  ? `${Math.round((metrics.errors / metrics.processed) * 100)}%`
                   : "0%"}
+              </div>
+            </div>
+
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-center mb-2">
+                <Clock className="h-5 w-5 text-gray-500 mr-2" />
+                <span className="text-sm font-medium text-gray-500">
+                  Total Processed
+                </span>
+              </div>
+              <div className="text-2xl font-bold text-gray-900">
+                {isLoading ? "..." : metrics.processed.toLocaleString()}
               </div>
             </div>
           </div>
