@@ -93,35 +93,35 @@ const Home = () => {
 
   // Prepare chart data
   const pieChartData = [
-    { name: "Success", value: metrics.success, color: "#10b981" },
-    { name: "Errors", value: metrics.errors, color: "#ef4444" },
-    { name: "Pending", value: metrics.pending, color: "#f59e0b" },
+    { name: "Cleared Line Items", value: metrics.success, color: "#10b981" },
+    { name: "Errored Line Items", value: metrics.errors, color: "#ef4444" },
+    { name: "Auto Posted Lines", value: metrics.autoPosting, color: "#f59e0b" },
   ];
 
   const barChartData = [
     {
       name: "This Week",
-      success: metrics.success,
-      errors: metrics.errors,
-      pending: metrics.pending,
+      "Cleared Line Items": metrics.success,
+      "Errored Line Items": metrics.errors,
+      "Auto Posted Lines": metrics.autoPosting,
     },
     {
       name: "Last Week",
-      success: Math.floor(metrics.success * 0.8),
-      errors: Math.floor(metrics.errors * 0.6),
-      pending: Math.floor(metrics.pending * 1.2),
+      "Cleared Line Items": Math.floor(metrics.success * 0.8),
+      "Errored Line Items": Math.floor(metrics.errors * 0.6),
+      "Auto Posted Lines": Math.floor(metrics.autoPosting * 1.2),
     },
     {
       name: "2 Weeks Ago",
-      success: Math.floor(metrics.success * 0.6),
-      errors: Math.floor(metrics.errors * 0.9),
-      pending: Math.floor(metrics.pending * 0.8),
+      "Cleared Line Items": Math.floor(metrics.success * 0.6),
+      "Errored Line Items": Math.floor(metrics.errors * 0.9),
+      "Auto Posted Lines": Math.floor(metrics.autoPosting * 0.8),
     },
     {
       name: "3 Weeks Ago",
-      success: Math.floor(metrics.success * 0.7),
-      errors: Math.floor(metrics.errors * 1.1),
-      pending: Math.floor(metrics.pending * 0.9),
+      "Cleared Line Items": Math.floor(metrics.success * 0.7),
+      "Errored Line Items": Math.floor(metrics.errors * 1.1),
+      "Auto Posted Lines": Math.floor(metrics.autoPosting * 0.9),
     },
   ];
 
@@ -360,7 +360,7 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
+            {/* <div className="text-center p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center justify-center mb-2">
                 <Clock className="h-5 w-5 text-gray-500 mr-2" />
                 <span className="text-sm font-medium text-gray-500">
@@ -370,17 +370,17 @@ const Home = () => {
               <div className="text-2xl font-bold text-gray-900">
                 {isLoading ? "..." : metrics.processed.toLocaleString()}
               </div>
-            </div>
+            </div> */}
 
             <div className="text-center p-4 bg-yellow-50 rounded-lg">
               <div className="flex items-center justify-center mb-2">
                 <Clock className="h-5 w-5 text-yellow-500 mr-2" />
                 <span className="text-sm font-medium text-yellow-600">
-                  PENDING
+                  Auto Posted Lines
                 </span>
               </div>
               <div className="text-2xl font-bold text-gray-900">
-                {isLoading ? "..." : metrics.pending.toLocaleString()}
+                {isLoading ? "..." : metrics.autoPosting.toLocaleString()}
               </div>
             </div>
 
@@ -388,15 +388,15 @@ const Home = () => {
               <div className="flex items-center justify-center mb-2">
                 <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
                 <span className="text-sm font-medium text-green-600">
-                  SUCCESS RATE
+                  Cleared Line Items
                 </span>
               </div>
               <div className="text-2xl font-bold text-gray-900">
                 {isLoading
                   ? "..."
-                  : metrics.autoPosting > 0
+                  : metrics.metrics.processed > 0
                   ? `${Math.round(
-                      (metrics.success / metrics.autoPosting) * 100
+                      (metrics.success / metrics.processed) * 100
                     )}%`
                   : "0%"}
               </div>
@@ -406,15 +406,15 @@ const Home = () => {
               <div className="flex items-center justify-center mb-2">
                 <XCircle className="h-5 w-5 text-red-500 mr-2" />
                 <span className="text-sm font-medium text-red-600">
-                  ERROR RATE
+                  Errored Line Item
                 </span>
               </div>
               <div className="text-2xl font-bold text-gray-900">
                 {isLoading
                   ? "..."
-                  : metrics.autoPosting > 0
+                  : metrics.processed > 0
                   ? `${Math.round(
-                      (metrics.errors / metrics.autoPosting) * 100
+                      (metrics.errors / metrics.processed) * 100
                     )}%`
                   : "0%"}
               </div>
