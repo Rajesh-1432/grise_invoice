@@ -27,7 +27,7 @@ const dbConnect = async () => {
 const startServer = async () => {
   try {
     await dbConnect();
-    server.listen(3000, () => {
+    server.listen(3001, () => {
       console.log("Server is runnng at http://localhost:3000");
     });
   } catch (error) {
